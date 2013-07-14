@@ -1,11 +1,19 @@
 (ns handwriting.reader
-  (:require [clojure.java.io :as io]))
+  (:require [clojure.string :as str]
+            [clojure.java.io :as io]))
 
-(defn make-map [rows]
-  (reduce (fn [acc item] (assoc acc (rest item) (first item))) {} rows))
+(defn make-map [lines]
+  (reduce (fn [acc item]
+             (assoc acc
+                (rest item)
+                (first item)))
+                {} lines))
 
-(defn read-set [file-name]
-  (with-open [file (io/reader file-name)]
-    (let [file-stream (line-seq file)]
-      (make-map (rest file-stream)))))
+(defn parse-character-lines [lines]
+  (pmap (fn [line] (map (fn [character] (Long/parseLong character)) (str/split line #","))) lines))
+
+(defn read-csv [file]
+  (with-open [reader (io/reader file)]
+    (let [lines (rest (line-seq reader))]
+      (make-map (parse-character-lines lines)))))
 
